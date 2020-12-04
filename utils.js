@@ -158,29 +158,29 @@ module.exports = {
   /**
    * Updates the schema to postman
    * 
-   * @param {String} apiKey - API key to be used to authenticate the postman API
-   * @param {string} api - API Id of the updated schema
-   * @param {string} apiVersion - The apiVersion Id of the updated schema 
-   * @param {string} schemaId - schema Id of the updated schema
-   * @param {Object} schema - the updated schema
+   * @param {Object} payload
+   * @param {String} payload.apiKey - API key to be used to authenticate the postman API
+   * @param {string} payload.apiId - API Id of the updated schema
+   * @param {string} payload.apiVersionId - The apiVersion Id of the updated schema 
+   * @param {string} paylod.schemaId - schema Id of the updated schema
+   * @param {Object} payload.schema - the updated schema
    * @param {function} cb  - the callback function, called with (error, response)
    */
-  updateAPISchema: function (apiKey, api, apiVersion, schemaId, schema, cb) {
+  updateAPISchema: function (payload, cb) {
     // The code you place here will be executed every time your command is executed
 		let options = {
 			method: 'PUT',
-			url: `https://api.getpostman.com/apis/${api}/versions/${apiVersion}/schemas/${schemaId}`,
-		
-			'headers': {
-				'x-api-key': apiKey,
+			url: `${POSTMAN_API_URL}/apis/${payload.apiId}/versions/${payload.apiVersionId}/schemas/${payload.schemaId}`,
+			headers: {
+				'x-api-key': payload.apiKey,
 				'Content-Type': 'application/json'
       },
       // TODO need to detect the type and language we want to update as
       body: JSON.stringify({
-				"schema": {
-					"type": "openapi3",
-					"language": "yaml",
-					"schema": schema
+				schema: {
+					type: 'openapi3',
+					language: 'yaml',
+					schema: payload.schema
 				}
 			})
     };
