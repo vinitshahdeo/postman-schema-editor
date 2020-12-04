@@ -14,10 +14,10 @@ const vscode = require('vscode'),
 function activate(context) {
 	var data = {
 		xApiKey: '',
-		workspace: '',
-		api: '',
-		apiVersion: '',
-		schema: ''
+		workspace: {},
+		api: {},
+		apiVersion: {},
+		schema: {}
 	};
 
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
@@ -85,11 +85,15 @@ function activate(context) {
 								utils.showDropdown(apiVersions, 'Select an API version').then((apiVersion) => {
 									data.apiVersion = apiVersion;
 
+									disposer = utils.setStatusBarMessage('Fetching schema of the API version provided');
 									utils.fetchAPISchema({
 										apiKey: data.xApiKey,
 										apiId: data.api.id,
 										apiVersionId: data.apiVersion.id
-									}, (err, res) => {
+									}, (err, schema) => {
+										data.schema = schema;
+										disposer.dispose();
+
 										if (err) {
 											utils.showError('Something went wrong while fetching API schema, please try again');
 											return;
@@ -97,12 +101,12 @@ function activate(context) {
 										else {
 											let folderPath = vscode.workspace.workspaceFolders[0].uri.toString().split(':')[1];
 											// todo: change the name of file
-											fs.writeFile(path.join(folderPath, 'schema.json'), res, {}, (err) => {
+											fs.writeFile(path.join(folderPath, 'schema.json'), schema, {}, (err) => {
 												if (err) {
-													utils.showError('Some error occurred while writing the file ' + err);
+													utils.showError('Some error occurred while writing schema to the file ' + err);
 												}
 												else {
-													utils.showInfo('API Schema is fetched successfully!');
+													utils.showInfo('API Schema fetched successfully!');
 												}
 											});
 										}
@@ -130,8 +134,8 @@ function activate(context) {
 				apiVersionId:  data.apiVersion.id,
 				schemaId: data.schema.id,
 				schema: updatedSchema
-			}, (error) => {
-				if (error) {
+			}, (error, response) => {
+				if (error || response.statusCode !== 200) {
 					utils.showError('Some error occurred while publishing the schema ' + error);
 					return;
 				}
