@@ -2,6 +2,8 @@ const request = require('request'),
   vscode = require('vscode'),
   async = require('async'),
   _ = require('lodash'),
+  fs = require('fs'),
+  path = require('path'),
   POSTMAN_API_URL = 'https://api.getpostman.com';
 module.exports = {
   /**
@@ -190,6 +192,77 @@ module.exports = {
       return cb(null, response);
     });
 
+  },
+
+  /**
+   * 
+   * Creates folder with API name and recursively creates files for different API versions
+   * 
+   * @param {String} xApiKey - Postman API Key
+   * @param {Object} api - API Object contains { name, id }
+   * @param {Function} cb - Callback function, called with error when any error occurs 
+   */
+  populateAPIVersions: function (xApiKey, api, cb) {
+
+    let folderPath = vscode.workspace.workspaceFolders[0].uri.toString().split(':')[1];
+
+    async.waterfall([
+      (next) => {
+        if (!fs.existsSync(`${folderPath}/${api.name}`)) {
+          fs.mkdir(`${folderPath}/${api.name}`, (err) => {
+            if (err) 
+              return next(err);
+            return next(null);
+          });
+        }
+        else {
+          return next(null);
+        }
+      },
+      (next) => {
+        let options = {
+          method: 'GET',
+          url: `${POSTMAN_API_URL}/apis/${api.id}/versions`,
+          headers: {
+            'x-api-key': xApiKey,
+            'Content-Type': 'application/json'
+          }
+        };
+
+        request(options, (err, res) => {
+          if (err) return next(err);
+          
+          return next(null, JSON.parse(res.body).versions);
+        });
+      },
+      (versions, next) => {
+        async.forEachOf(versions, (version, next) => {
+          this.fetchAPISchema({
+            apiId: api.id,
+            apiVersionId: version.id,
+            apiKey: xApiKey
+          }, (err, schema) => {
+            if (err) return next(err);
+
+            let filePath = path.join(folderPath, api.name, `${version.name}.${schema.language}`);
+
+            fs.writeFile(filePath, schema.schema, {}, (err) => {
+              if (err)
+                return next(err);
+            });
+          })
+        
+        }, (err) => {
+          if (err)
+            return next(err);
+        });
+      }
+    ], (err, result) => {
+      if (err) 
+        return cb(err);
+
+      return cb(null, result);
+    });
   },
 
   /**
