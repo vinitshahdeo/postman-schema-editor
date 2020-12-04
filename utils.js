@@ -197,5 +197,9 @@ module.exports = {
    */
   showInfo: function(info) {
     vscode.window.showInformationMessage(info);
+  },
+
+  setStatusBarMessage: function(text) {
+    return vscode.window.setStatusBarMessage(text);
   }
 };
