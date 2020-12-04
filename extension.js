@@ -24,10 +24,14 @@ function activate(context) {
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with  registerCommand
 	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('postman-schema-editor.helloWorld', function () {
+	let disposable = vscode.commands.registerCommand('postman-schema-editor.fetchPostmanSchema', function () {
 		// The code you place here will be executed every time your command is executed
 
-		utils.showInputBox('Enter your API Key').then((apiKey) => {
+		utils.showInputBox({
+			placeHolder: 'Enter your API key',
+			password: true,
+			prompt: 'This will be used to authenticate requests to Postman API'
+		}).then((apiKey) => {
 			data.xApiKey = apiKey;
 			
 			let disposer = utils.setStatusBarMessage('Fetching your workspaces');
