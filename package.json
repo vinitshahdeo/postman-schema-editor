@@ -10,7 +10,8 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:postman-schema-editor.helloWorld"
+		"onCommand:postman-schema-editor.helloWorld",
+		"onCommand:postman-schema-editor.publishToPostman"
 	],
 	"main": "./extension.js",
 	"contributes": {
@@ -18,8 +19,14 @@
 			{
 				"command": "postman-schema-editor.helloWorld",
 				"title": "Hello World"
+			},
+			{
+				"command": "postman-schema-editor.publishToPostman",
+				"title": "Publish To Postman"
 			}
+
 		]
+
 	},
 	"scripts": {
 		"lint": "eslint .",

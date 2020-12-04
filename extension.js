@@ -81,6 +81,58 @@ function activate(context) {
 	});
 
 	context.subscriptions.push(disposable);
+
+	let publishCommand = vscode.commands.registerCommand('postman-schema-editor.publishToPostman', function () {
+		// The code you place here will be executed every time your command is executed
+		let options = {
+			method: 'PUT',
+			url: `https://api.getpostman.com/apis/${data.apiId}/versions/${data.apiVersionId}/schemas/${data.schemaId}`,
+		
+			'headers': {
+				'x-api-key': data.xApiKey,
+				'Content-Type': 'application/json'
+			}
+		},
+		folderPath = vscode.workspace.workspaceFolders[0].uri.toString().split(':')[1];
+
+		// Get the active text editor
+        const editor = vscode.window.activeTextEditor;
+
+        if (editor) {
+            let document = editor.document;
+            // Get the document text
+			const documentText = document.getText();
+			options.body = JSON.stringify({
+				"schema": {
+					"type": "openapi3",
+					"language": "yaml",
+					"schema": documentText
+				}
+			});
+
+			request(options, function (error, response) {
+				if (error) {
+					vscode.window.showInformationMessage('Some error occurred while downloading the contents ' + error);
+					return;
+				}
+				
+				let beautifiedJson = JSON.stringify(JSON.parse(response.body), null, 2);
+				
+				fs.writeFile(path.join(folderPath, 'openapi2.json'), beautifiedJson, {}, (err) => {
+					if (err) {
+						vscode.window.showErrorMessage('Some error occurred while writing the file ' + err);
+					}
+					else {
+						vscode.window.showInformationMessage('Executed successfully');
+					}
+				});
+			});
+        }
+	});
+
+	context.subscriptions.push(publishCommand);
+
+
 }
 exports.activate = activate;
 
