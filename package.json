@@ -2,7 +2,7 @@
 	"name": "postman-schema-editor",
 	"displayName": "Postman Schema Editor",
 	"description": "Edit your Postman Schema directly into VS Code",
-	"version": "0.0.1",
+	"version": "1.0.0",
 	"engines": {
 		"vscode": "^1.51.0"
 	},
