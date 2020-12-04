@@ -3,7 +3,8 @@
 const vscode = require('vscode'),
 	fs = require('fs'),
 	path = require('path'),
-	utils = require('./utils');
+	utils = require('./utils'),
+	_ = require('lodash');
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -45,7 +46,7 @@ function activate(context) {
 					return;
 				}
 
-				if (!workspaces) {
+				if (_.isEmpty(workspaces)) {
 					utils.showError('No workspaces found for the user');
 					return;
 				}
@@ -61,7 +62,7 @@ function activate(context) {
 							return;
 						}
 
-						if (!apis) {
+						if (_.isEmpty(apis)) {
 							utils.showError('No apis found for the user');
 							return;
 						}
@@ -77,7 +78,7 @@ function activate(context) {
 									return;
 								}
 
-								if (!apiVersions) {
+								if (_.isEmpty(apiVersions)) {
 									utils.showError('No api versions found for the provided API');
 									return;
 								}
@@ -99,13 +100,19 @@ function activate(context) {
 											return;
 										}
 										else {
-											let folderPath = vscode.workspace.workspaceFolders[0].uri.toString().split(':')[1];
-											fs.writeFile(path.join(folderPath, `${data.api.name}-${data.apiVersion.name}.${data.schema.language}` ), schema.schema, {}, (err) => {
+											let folderPath = vscode.workspace.workspaceFolders[0].uri.toString().split(':')[1],
+												filePath = path.join(folderPath, `${data.api.name}-${data.apiVersion.name}.${data.schema.language}`);
+
+											fs.writeFile(filePath, schema.schema, {}, (err) => {
 												if (err) {
 													utils.showError('Some error occurred while writing schema to the file ' + err);
 												}
 												else {
-                          utils.showInfo('API Schema fetched successfully!');
+													let openPath = vscode.Uri.file(filePath); 
+													vscode.workspace.openTextDocument(openPath).then(doc => {
+														vscode.window.showTextDocument(doc);
+														utils.showInfo('API Schema fetched successfully!')
+													});
 												}
 											});
 										}

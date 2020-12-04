@@ -22,7 +22,7 @@
 		"commands": [
 			{
 				"command": "postman-schema-editor.fetchPostmanSchema",
-				"title": "Fetch Postman Schema"
+				"title": "Fetch Schema from Postman"
 			},
 			{
 				"command": "postman-schema-editor.publishSchemaToPostman",
