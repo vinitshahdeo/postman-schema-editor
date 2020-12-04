@@ -101,7 +101,7 @@ function activate(context) {
 										else {
 											let folderPath = vscode.workspace.workspaceFolders[0].uri.toString().split(':')[1];
 											// todo: change the name of file
-											fs.writeFile(path.join(folderPath, 'schema.json'), schema, {}, (err) => {
+											fs.writeFile(path.join(folderPath, 'schema.json'), schema.content, {}, (err) => {
 												if (err) {
 													utils.showError('Some error occurred while writing schema to the file ' + err);
 												}

@@ -130,7 +130,7 @@ module.exports = {
         };
         request(options, (err, res) => {
           if (err) return next(err);
-
+          
           return next(null, _.get(JSON.parse(res.body), 'version.schema')[0]);
         });
       },
@@ -146,7 +146,10 @@ module.exports = {
 
         request(options, (err, res) => {
           if (err) return next(err);
-          return next(null, _.get(JSON.parse(res.body), 'schema.schema'));
+          return next(null, {
+            id: schemaId,
+            content: _.get(JSON.parse(res.body), 'schema.schema')
+          });
         });
       }
     ], (err, result) => {
