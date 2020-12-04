@@ -79,6 +79,7 @@ function activate(context) {
 
 								utils.showDropdown(apiVersions, 'Select an API version').then((apiVersion) => {
 									data.apiVersion = apiVersion;
+
 									utils.fetchAPISchema({
 										apiKey: data.xApiKey,
 										apiId: data.api.id,
@@ -86,6 +87,7 @@ function activate(context) {
 									}, (err, res) => {
 										if (err) {
 											utils.showError('Something went wrong while fetching API schema, please try again');
+											return;
 										}
 										else {
 											let folderPath = vscode.workspace.workspaceFolders[0].uri.toString().split(':')[1];
