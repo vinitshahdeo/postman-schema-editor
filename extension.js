@@ -127,7 +127,7 @@ function activate(context) {
 			let document = editor.document,
 				// Get the document text
 				updatedSchema = document.getText();
-
+			let disposer = utils.setStatusBarMessage('Uploading the schema to postman');
 			utils.updateAPISchema ({
 				apiKey: data.xApiKey,
 				apiId: data.api.id,
@@ -135,6 +135,8 @@ function activate(context) {
 				schemaId: data.schema.id,
 				schema: updatedSchema
 			}, (error, response) => {
+				disposer.dispose();
+				
 				if (error || response.statusCode !== 200) {
 					utils.showError('Some error occurred while publishing the schema ' + error);
 					return;
