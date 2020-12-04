@@ -116,7 +116,7 @@ function activate(context) {
 		});
 	});
 
-	let publishCommandDisposer = vscode.commands.registerCommand('postman-schema-editor.publishToPostman', function () {
+	let publishCommandDisposer = vscode.commands.registerCommand('postman-schema-editor.publishSchemaToPostman', function () {
 		// Get the active text editor
 		const editor = vscode.window.activeTextEditor;
 		if (editor) {
