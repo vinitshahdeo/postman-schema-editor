@@ -100,8 +100,7 @@ function activate(context) {
 										}
 										else {
 											let folderPath = vscode.workspace.workspaceFolders[0].uri.toString().split(':')[1];
-											// todo: change the name of file
-											fs.writeFile(path.join(folderPath, 'schema.json'), schema.content, {}, (err) => {
+											fs.writeFile(path.join(folderPath, `${data.api.name}-${data.apiVersion.name}.${data.schema.language}` ), schema.schema, {}, (err) => {
 												if (err) {
 													utils.showError('Some error occurred while writing schema to the file ' + err);
 												}
@@ -132,7 +131,9 @@ function activate(context) {
 				apiKey: data.xApiKey,
 				apiId: data.api.id,
 				apiVersionId:  data.apiVersion.id,
-				schemaId: data.schema.id,
+        schemaId: data.schema.id,
+        type: data.schema.type,
+        language: data.schema.language,
 				schema: updatedSchema
 			}, (error, response) => {
 				if (error || response.statusCode !== 200) {
