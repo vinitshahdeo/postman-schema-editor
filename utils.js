@@ -178,8 +178,8 @@ module.exports = {
       // TODO need to detect the type and language we want to update as
       body: JSON.stringify({
 				schema: {
-					type: payload.type,
-					language: payload.language,
+					type: payload.schemaType,
+					language: payload.schemaLanguage,
 					schema: payload.schema
 				}
 			})

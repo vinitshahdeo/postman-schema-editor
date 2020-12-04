@@ -105,7 +105,7 @@ function activate(context) {
 													utils.showError('Some error occurred while writing schema to the file ' + err);
 												}
 												else {
-													utils.showInfo('API Schema fetched successfully!');
+                          utils.showInfo('API Schema fetched successfully!');
 												}
 											});
 										}
@@ -131,9 +131,9 @@ function activate(context) {
 				apiKey: data.xApiKey,
 				apiId: data.api.id,
 				apiVersionId:  data.apiVersion.id,
-        schemaId: data.schema.id,
-        type: data.schema.type,
-        language: data.schema.language,
+        		schemaId: data.schema.id,
+        		schemaType: data.schema.type,
+        		schemaLanguage: data.schema.language,
 				schema: updatedSchema
 			}, (error, response) => {
 				if (error || response.statusCode !== 200) {
