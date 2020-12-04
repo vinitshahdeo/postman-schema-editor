@@ -36,6 +36,15 @@
 					"group": "Postman"
 				}
 			]
+		},
+		"configuration": {
+			"title": "postman-schema-editor",
+			"properties": {
+				"postmanSchemaEditor.apiKey": {
+					"type": "string",
+					"markdownDescription": "The API Key used to authenticate the postman API. Get your API key from [here](https://go.postman.co/integrations/services/pm_pro_api)"
+				}
+			}
 		}
 	},
 	"scripts": {

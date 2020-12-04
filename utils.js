@@ -20,8 +20,8 @@ module.exports = {
     };
 
     request(options, function (err, response) {
-      if (err) {
-        return cb(err);
+      if (err || response.error) {
+        return cb(err || response.error.message);
       }
       let workspaces = JSON.parse(response.body).workspaces;
       if (!workspaces) {
@@ -56,8 +56,8 @@ module.exports = {
     };
 
     request(options, function (err, response) {
-      if (err) {
-        return cb(err);
+      if (err || response.error) {
+        return cb(err || response.error.message);
       }
 
       let apis = JSON.parse(response.body).apis;
@@ -92,8 +92,8 @@ module.exports = {
     };
 
     request(options, function (err, response) {
-      if (err) {
-        return cb(err);
+      if (err || response.error) {
+        return cb(err || response.error.message);
       }
 
       let apiVersions = JSON.parse(response.body).versions;
@@ -129,7 +129,9 @@ module.exports = {
           }
         };
         request(options, (err, res) => {
-          if (err) return next(err);
+          if (err || res.error) {
+            return cb(err || res.error.message);
+          }
           
           return next(null, _.get(JSON.parse(res.body), 'version.schema')[0]);
         });
@@ -145,7 +147,10 @@ module.exports = {
         };
 
         request(options, (err, res) => {
-          if (err) return next(err);
+          if (err || res.error) {
+            return cb(err || res.error.message);
+          }
+
           return next(null, JSON.parse(res.body).schema);
         });
       }
@@ -185,7 +190,9 @@ module.exports = {
 			})
     };
     request(options, function (error, response) {
-      if (error) return cb(error);
+      if (error || response.error) {
+        return cb(error || response.error.message);
+      }
 
       return cb(null, response);
     });
