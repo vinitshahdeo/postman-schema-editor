@@ -24,9 +24,7 @@
 				"command": "postman-schema-editor.publishToPostman",
 				"title": "Publish To Postman"
 			}
-
 		]
-
 	},
 	"scripts": {
 		"lint": "eslint .",
