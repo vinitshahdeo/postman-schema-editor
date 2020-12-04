@@ -31,7 +31,7 @@ function activate(context) {
 
 		utils.showInputBox('Enter your API Key').then((apiKey) => {
 			data.xApiKey = apiKey;
-			
+
 			let disposer = utils.setStatusBarMessage('Fetching your workspaces');
 			utils.getWorkspaces(data.xApiKey, function (error, workspaces) {
 				disposer.dispose();
@@ -78,7 +78,7 @@ function activate(context) {
 								}
 
 								utils.showDropdown(apiVersions, 'Select an API version').then((apiVersion) => {
-									data.apiVersion = apiVersion; 
+									data.apiVersion = apiVersion;
 									utils.fetchAPISchema({
 										apiKey: data.xApiKey,
 										apiId: data.api.id,
