@@ -81,7 +81,7 @@ module.exports = {
    * @param {Object} api - The API object for which the different versions needs to be fetched
    * @param {function} cb  - the callback function, called with (error, results)
    */
-  getApiVersions: function(apiKey, api, cb) {
+  getApiVersions: function (apiKey, api, cb) {
     let options = {
       method: 'GET',
       url: `${POSTMAN_API_URL}/apis/${api.id}/versions`,
@@ -156,6 +156,43 @@ module.exports = {
   },
 
   /**
+   * Updates the schema to postman
+   * 
+   * @param {Object} payload
+   * @param {String} payload.apiKey - API key to be used to authenticate the postman API
+   * @param {string} payload.apiId - API Id of the updated schema
+   * @param {string} payload.apiVersionId - The apiVersion Id of the updated schema 
+   * @param {string} paylod.schemaId - schema Id of the updated schema
+   * @param {Object} payload.schema - the updated schema
+   * @param {function} cb  - the callback function, called with (error, response)
+   */
+  updateAPISchema: function (payload, cb) {
+    // The code you place here will be executed every time your command is executed
+		let options = {
+			method: 'PUT',
+			url: `${POSTMAN_API_URL}/apis/${payload.apiId}/versions/${payload.apiVersionId}/schemas/${payload.schemaId}`,
+			headers: {
+				'x-api-key': payload.apiKey,
+				'Content-Type': 'application/json'
+      },
+      // TODO need to detect the type and language we want to update as
+      body: JSON.stringify({
+				schema: {
+					type: 'openapi3',
+					language: 'yaml',
+					schema: payload.schema
+				}
+			})
+    };
+    request(options, function (error, response) {
+      if (error) return cb(error);
+
+      return cb(null, response);
+    });
+
+  },
+
+  /**
    * Displays an input box to the user, with the placeholder text provided
    * 
    * @param {String} placeHolder - The placeholder to be displayed in the input box
@@ -169,7 +206,7 @@ module.exports = {
   /**
    * Displays a dropdown list to the user, with the placeholder text provided
    * 
-   * @param {Arrat} items - An array of items to be displayed in the dropdown, from which the user can select an option
+   * @param {Array} items - An array of items to be displayed in the dropdown, from which the user can select an option
    * @param {String} placeHolder  - The placeholder to be displayed in the dropdown box
    */
   showDropdown: function (items, placeHolder) {
@@ -185,7 +222,7 @@ module.exports = {
    * 
    * @param {String} err - The error to be displayed
    */
-  showError: function(err) {
+  showError: function (err) {
     vscode.window.showErrorMessage(err);
   },
 
@@ -194,7 +231,7 @@ module.exports = {
    * 
    * @param {String} info - The information to be displayed
    */
-  showInfo: function(info) {
+  showInfo: function (info) {
     vscode.window.showInformationMessage(info);
   },
 

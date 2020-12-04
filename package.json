@@ -18,6 +18,10 @@
 			{
 				"command": "postman-schema-editor.fetchPostmanSchema",
 				"title": "Fetch Postman Schema"
+			},
+			{
+				"command": "postman-schema-editor.publishSchemaToPostman",
+				"title": "Publish Schema to Postman"
 			}
 		]
 	},

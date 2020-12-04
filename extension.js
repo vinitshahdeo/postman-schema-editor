@@ -14,7 +14,8 @@ function activate(context) {
 		xApiKey: '',
 		workspace: '',
 		api: '',
-		apiVersion: ''
+		apiVersion: '',
+		schema: ''
 	};
 
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
@@ -24,7 +25,7 @@ function activate(context) {
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with  registerCommand
 	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('postman-schema-editor.fetchPostmanSchema', function () {
+	let fetchCommandDisposer = vscode.commands.registerCommand('postman-schema-editor.fetchPostmanSchema', function () {
 		// The code you place here will be executed every time your command is executed
 
 		utils.showInputBox({
@@ -93,7 +94,36 @@ function activate(context) {
 		});
 	});
 
-	context.subscriptions.push(disposable);
+	let publishCommandDisposer = vscode.commands.registerCommand('postman-schema-editor.publishToPostman', function () {
+		// Get the active text editor
+		const editor = vscode.window.activeTextEditor;
+		if (editor) {
+			let document = editor.document,
+				// Get the document text
+				updatedSchema = document.getText();
+
+			utils.updateAPISchema ({
+				apiKey: data.xApiKey,
+				apiId: data.api.id,
+				apiVersionId:  data.apiVersion.id,
+				schemaId: data.schema.id,
+				schema: updatedSchema
+			}, (error) => {
+				if (error) {
+					utils.showError('Some error occurred while publishing the schema ' + error);
+					return;
+				}
+				else {
+					utils.showInfo('Successfully published the updated schema to postman :tada: !');
+				}
+			});
+		}
+		else {
+			utils.showError('Please have your schema in active tab and execute the command !');
+		}
+	});
+
+	context.subscriptions.push(fetchCommandDisposer, publishCommandDisposer);
 }
 exports.activate = activate;
 
