@@ -28,7 +28,15 @@
 				"command": "postman-schema-editor.publishSchemaToPostman",
 				"title": "Publish Schema to Postman"
 			}
-		]
+		],
+		"menus": {
+			"editor/context": [
+				{
+					"command": "postman-schema-editor.publishSchemaToPostman",
+					"group": "Postman"
+				}
+			]
+		}
 	},
 	"scripts": {
 		"lint": "eslint .",
