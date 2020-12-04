@@ -1,5 +1,7 @@
 const request = require('request'),
   vscode = require('vscode'),
+  async = require('async'),
+  _ = require('lodash'),
   POSTMAN_API_URL = 'https://api.getpostman.com';
 module.exports = {
   /**
@@ -105,6 +107,51 @@ module.exports = {
       });
 
       return cb(null, apiVersions);
+    });
+  },
+
+  /**
+   * 
+   * Fetches schema for given API and API Version Id
+   * 
+   * @param {Object} credentials - contains { apiKey, apiId, apiVersionId }
+   * @param {Function} cb - callback function called with (err, res) where res is the schema definition
+   */
+  fetchAPISchema: function (credentials, cb) {
+    async.waterfall([
+      (next) => {
+        let options = {
+          method: 'GET',
+          url: `${POSTMAN_API_URL}/apis/${credentials.apiId}/versions/${credentials.apiVersionId}`,
+          headers: {
+            'x-api-key': credentials.apiKey,
+            'Content-Type': 'application/json'
+          }
+        };
+        request(options, (err, res) => {
+          if (err) return next(err);
+
+          return next(null, _.get(JSON.parse(res.body), 'version.schema')[0]);
+        });
+      },
+      (schemaId, next) => {
+        let options = {
+          method: 'GET',
+          url: `${POSTMAN_API_URL}/apis/${credentials.apiId}/versions/${credentials.apiVersionId}/schemas/${schemaId}`,
+          headers: {
+            'x-api-key': credentials.apiKey,
+            'Content-Type': 'application/json'
+          }
+        };
+
+        request(options, (err, res) => {
+          if (err) return next(err);
+          return next(null, _.get(JSON.parse(res.body), 'schema.schema'));
+        });
+      }
+    ], (err, result) => {
+      if (err) return cb(err);
+      return cb(null, result);
     });
   },
 
