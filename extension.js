@@ -1,6 +1,8 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode'),
+	fs = require('fs'),
+	path = require('path'),
 	utils = require('./utils');
 
 // this method is called when your extension is activated
@@ -34,7 +36,7 @@ function activate(context) {
 			prompt: 'This will be used to authenticate requests to Postman API'
 		}).then((apiKey) => {
 			data.xApiKey = apiKey;
-			
+
 			let disposer = utils.setStatusBarMessage('Fetching your workspaces');
 			utils.getWorkspaces(data.xApiKey, function (error, workspaces) {
 				disposer.dispose();
@@ -82,9 +84,29 @@ function activate(context) {
 
 								utils.showDropdown(apiVersions, 'Select an API version').then((apiVersion) => {
 									data.apiVersion = apiVersion;
-									
-									// TODO 
-									// add a function in utils to fetch the schema from api version and use it here
+
+									utils.fetchAPISchema({
+										apiKey: data.xApiKey,
+										apiId: data.api.id,
+										apiVersionId: data.apiVersion.id
+									}, (err, res) => {
+										if (err) {
+											utils.showError('Something went wrong while fetching API schema, please try again');
+											return;
+										}
+										else {
+											let folderPath = vscode.workspace.workspaceFolders[0].uri.toString().split(':')[1];
+											// todo: change the name of file
+											fs.writeFile(path.join(folderPath, 'schema.json'), res, {}, (err) => {
+												if (err) {
+													utils.showError('Some error occurred while writing the file ' + err);
+												}
+												else {
+													utils.showInfo('API Schema is fetched successfully!');
+												}
+											});
+										}
+									});
 								});
 							});
 						});
