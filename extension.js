@@ -100,13 +100,12 @@ function activate(context) {
 										}
 										else {
 											let folderPath = vscode.workspace.workspaceFolders[0].uri.toString().split(':')[1];
-											// todo: change the name of file
-											fs.writeFile(path.join(folderPath, 'schema.json'), schema.content, {}, (err) => {
+											fs.writeFile(path.join(folderPath, `${data.api.name}-${data.apiVersion.name}.${data.schema.language}` ), schema.schema, {}, (err) => {
 												if (err) {
 													utils.showError('Some error occurred while writing schema to the file ' + err);
 												}
 												else {
-													utils.showInfo('API Schema fetched successfully!');
+                          utils.showInfo('API Schema fetched successfully!');
 												}
 											});
 										}
@@ -132,7 +131,9 @@ function activate(context) {
 				apiKey: data.xApiKey,
 				apiId: data.api.id,
 				apiVersionId:  data.apiVersion.id,
-				schemaId: data.schema.id,
+        		schemaId: data.schema.id,
+        		schemaType: data.schema.type,
+        		schemaLanguage: data.schema.language,
 				schema: updatedSchema
 			}, (error, response) => {
 				disposer.dispose();

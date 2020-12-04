@@ -146,10 +146,7 @@ module.exports = {
 
         request(options, (err, res) => {
           if (err) return next(err);
-          return next(null, {
-            id: schemaId,
-            content: _.get(JSON.parse(res.body), 'schema.schema')
-          });
+          return next(null, JSON.parse(res.body).schema);
         });
       }
     ], (err, result) => {
@@ -181,8 +178,8 @@ module.exports = {
       // TODO need to detect the type and language we want to update as
       body: JSON.stringify({
 				schema: {
-					type: 'openapi3',
-					language: 'yaml',
+					type: payload.schemaType,
+					language: payload.schemaLanguage,
 					schema: payload.schema
 				}
 			})
