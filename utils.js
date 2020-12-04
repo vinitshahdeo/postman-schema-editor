@@ -197,11 +197,10 @@ module.exports = {
    * 
    * @param {String} placeHolder - The placeholder to be displayed in the input box
    */
-  showInputBox: function (placeHolder) {
-    return vscode.window.showInputBox({
-      placeHolder,
+  showInputBox: function (options) {
+    return vscode.window.showInputBox(_.merge(options, {
       ignoreFocusOut: true
-    });
+    }));
   },
 
   /**
@@ -234,5 +233,9 @@ module.exports = {
    */
   showInfo: function (info) {
     vscode.window.showInformationMessage(info);
+  },
+
+  setStatusBarMessage: function(text) {
+    return vscode.window.setStatusBarMessage(text);
   }
 };

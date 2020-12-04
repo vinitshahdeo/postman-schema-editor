@@ -25,13 +25,19 @@ function activate(context) {
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with  registerCommand
 	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('postman-schema-editor.helloWorld', function () {
+	let disposable = vscode.commands.registerCommand('postman-schema-editor.fetchPostmanSchema', function () {
 		// The code you place here will be executed every time your command is executed
 
-		utils.showInputBox('Enter your API Key').then((apiKey) => {
+		utils.showInputBox({
+			placeHolder: 'Enter your API key',
+			password: true,
+			prompt: 'This will be used to authenticate requests to Postman API'
+		}).then((apiKey) => {
 			data.xApiKey = apiKey;
 			
+			let disposer = utils.setStatusBarMessage('Fetching your workspaces');
 			utils.getWorkspaces(data.xApiKey, function (error, workspaces) {
+				disposer.dispose();
 				if (error) {
 					utils.showError('Some error occurred while fetching workspaces ' + error);
 					return;
@@ -39,12 +45,15 @@ function activate(context) {
 
 				if (!workspaces) {
 					utils.showError('No workspaces found for the user');
+					return;
 				}
 
 				utils.showDropdown(workspaces,'Select the worskpace').then((workspace) => {
 					data.workspace = workspace;
 
+					disposer = utils.setStatusBarMessage('Fetching APIs in the selected workspace');
 					utils.getApisInAWorkspace(data.xApiKey, data.workspace, function (error, apis) {
+						disposer.dispose();
 						if (error) {
 							utils.showError('Some error occurred while fetching APIs in the workspace ' + error);
 							return;
@@ -52,12 +61,15 @@ function activate(context) {
 
 						if (!apis) {
 							utils.showError('No apis found for the user');
+							return;
 						}
 
 						utils.showDropdown(apis,'Select an API').then((api) => {
 							data.api = api;
 
+							disposer = utils.setStatusBarMessage('Fetching versions of the selected API');
 							utils.getApiVersions(data.xApiKey, data.api, function (error, apiVersions) {
+								disposer.dispose();
 								if (error) {
 									utils.showError('Some error occurred while fetching versions of an API ' + error);
 									return;
@@ -65,6 +77,7 @@ function activate(context) {
 
 								if (!apiVersions) {
 									utils.showError('No api versions found for the provided API');
+									return;
 								}
 
 								utils.showDropdown(apiVersions, 'Select an API version').then((apiVersion) => {
