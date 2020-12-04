@@ -160,11 +160,10 @@ module.exports = {
    * 
    * @param {String} placeHolder - The placeholder to be displayed in the input box
    */
-  showInputBox: function (placeHolder) {
-    return vscode.window.showInputBox({
-      placeHolder,
+  showInputBox: function (options) {
+    return vscode.window.showInputBox(_.merge(options, {
       ignoreFocusOut: true
-    });
+    }));
   },
 
   /**

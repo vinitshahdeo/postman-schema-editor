@@ -10,14 +10,14 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:postman-schema-editor.helloWorld"
+		"onCommand:postman-schema-editor.fetchPostmanSchema"
 	],
 	"main": "./extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "postman-schema-editor.helloWorld",
-				"title": "Hello World"
+				"command": "postman-schema-editor.fetchPostmanSchema",
+				"title": "Fetch Postman Schema"
 			}
 		]
 	},
@@ -27,7 +27,6 @@
 		"test": "node ./test/runTest.js"
 	},
 	"devDependencies": {
-		"request": "2.88.2",
 		"@types/vscode": "^1.51.0",
 		"@types/glob": "^7.1.3",
 		"@types/mocha": "^8.0.0",
@@ -40,6 +39,7 @@
 	},
 	"dependencies": {
 		"async": "^3.2.0",
-		"lodash": "^4.17.20"
+		"lodash": "^4.17.20",
+		"request": "2.88.2"
 	}
 }
