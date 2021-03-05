@@ -37,6 +37,25 @@
 				}
 			]
 		},
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "package-explorer",
+					"title": "Postman APIs",
+					"icon": "media/pm.svg"
+				}
+			]
+		},
+		"views": {
+			"package-explorer": [
+				{
+					"id": "postmanApis",
+					"name": "Postman APIs",
+					"icon": "media/dep.svg",
+					"contextualTitle": "Package Explorer"
+				}
+			]
+		},
 		"configuration": {
 			"title": "postman-schema-editor",
 			"properties": {
