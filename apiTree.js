@@ -1,11 +1,16 @@
 const utils = require('./utils'),
-    path = require('path');
+    path = require('path'),
+    vscode = require('vscode');
 
 module.exports = {
     PostmanApiProvider: function (context) {
-
+        let _onDidChangeTreeData = new vscode.EventEmitter();
 
         return {
+            onDidChangeTreeData: _onDidChangeTreeData.event,
+            refresh: function () {
+                _onDidChangeTreeData.fire();
+            },
             getChildren: function (element) {
                 // context.workspaceState.
                 if (!element) {
@@ -17,8 +22,16 @@ module.exports = {
                 }
             },
             getTreeItem: function (item) {
+                item['contextValue'] = item['type'];
                 if (item['type'] == 'apiVersion') {
                     item['collapsibleState'] = 0;
+                    let command = {
+                        command: 'postman-schema-editor.openSchemaVersion',
+                        title: '',
+                        arguments: [item['id']]
+                    };
+                    item['command'] = command;
+
                 } else if (item['type'] == 'api') {
                     item['collapsibleState'] = 1;
                     iconPath = {

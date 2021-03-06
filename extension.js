@@ -5,7 +5,8 @@ const vscode = require('vscode'),
 	path = require('path'),
 	utils = require('./utils'),
 	_ = require('lodash'),
-	apiTree = require('./apiTree');
+	apiTree = require('./apiTree'),
+	fetchApiTree = require('./fetchApiTree');
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -28,7 +29,7 @@ function insertToListInStore(context, key, value, type) {
 	value['type'] = type;
 	storedItems = JSON.parse(context.workspaceState.get(key, "[]"));
 	storedItems.push(value);
-	
+
 	storedItems = _.uniqWith(storedItems, _.isEqual, "id")
 	context.workspaceState.update(key, JSON.stringify(storedItems));
 }
@@ -45,10 +46,14 @@ function setListInStore(context, key, value, type) {
  * @param {vscode.ExtensionContext} context
  */
 async function activate(context) {
+	let wsRoot = vscode.workspace.workspaceFolders[0].uri.toString().split(':')[1];
 
 	// clearStore(context);
+	let treeProvider = apiTree.PostmanApiProvider(context);
 
-	vscode.window.registerTreeDataProvider('postmanApis', apiTree.PostmanApiProvider(context));
+	vscode.window.registerTreeDataProvider('postmanApis', treeProvider);
+	vscode.window.registerTreeDataProvider('fetchApi', fetchApiTree.PostmanFetchApiProvider());
+
 	var data = {
 		xApiKey: '',
 		workspace: {},
@@ -63,8 +68,8 @@ async function activate(context) {
 
 	let apiKey = vscode.workspace.getConfiguration().get('postmanSchemaEditor.apiKey');
 	if (_.isEmpty(apiKey)) {
-		let choice = await vscode.window.showInformationMessage('You can add an API key here', ...['yes', 'no']);
-		if (choice === 'yes') {
+		let choice = await vscode.window.showInformationMessage('Please provide your API key first', ...['Continue', 'Cancel']);
+		if (choice === 'Continue') {
 			vscode.commands.executeCommand('workbench.action.openSettings', 'postmanSchemaEditor.apiKey');
 		}
 	}
@@ -79,15 +84,15 @@ async function activate(context) {
 		// The code you place here will be executed every time your command is executed
 
 		let apiKey = vscode.workspace.getConfiguration().get('postmanSchemaEditor.apiKey');
-		if (!apiKey) {
-			let apiKey = await utils.showInputBox({
-				placeHolder: 'Enter your API key',
-				password: true,
-				prompt: 'This will be used to authenticate requests to Postman API'
-			});
 
-			data.xApiKey = apiKey;
-			vscode.workspace.getConfiguration().update('postmanSchemaEditor.apiKey', apiKey);
+		if (_.isEmpty(apiKey)) {
+			let choice = await vscode.window.showInformationMessage('Please provide your API key first', ...['Continue', 'Cancel']);
+			if (choice === 'Continue') {
+				vscode.commands.executeCommand('workbench.action.openSettings', 'postmanSchemaEditor.apiKey');
+				return;
+			} else {
+				return;
+			}
 		}
 		else {
 			data.xApiKey = apiKey;
@@ -111,9 +116,6 @@ async function activate(context) {
 
 				disposer = utils.setStatusBarMessage('Fetching APIs in the selected workspace');
 				utils.getApisInAWorkspace(data.xApiKey, data.workspace, function (error, apis) {
-
-					insertToListInStore(context, "postmanSchemaFetch.ws", data.workspace, 'workspace');
-
 					disposer.dispose();
 					if (error) {
 						utils.showError('Some error occurred while fetching APIs in the workspace ' + error);
@@ -124,6 +126,8 @@ async function activate(context) {
 						utils.showError('No apis found for the user');
 						return;
 					}
+
+					insertToListInStore(context, "postmanSchemaFetch.ws", data.workspace, 'workspace');
 
 					utils.showDropdown(apis, 'Select an API').then((api) => {
 						data.api = api;
@@ -145,40 +149,59 @@ async function activate(context) {
 								utils.showError('No api versions found for the provided API');
 								return;
 							}
-							// context.workspaceState.
 
-							utils.showDropdown(apiVersions, 'Select an API version').then((apiVersion) => {
+							// TODO all storage to be agnostic of WS root
+							let apisFolder = `Postman APIs`;
+
+							// TODO all storage to be agnostic of WS root
+							if (!fs.existsSync(path.join(wsRoot, apisFolder))) {
+								fs.mkdirSync(path.join(wsRoot, apisFolder));
+							}
+
+							// TODO all storage to be agnostic of WS root
+							let folderPath = path.join(apisFolder, api.name);
+
+							if (!fs.existsSync(path.join(wsRoot, folderPath))) {
+								fs.mkdirSync(path.join(wsRoot, folderPath));
+							}
+
+							disposer = utils.setStatusBarMessage('Fetching schemas of the API');
+							_.forEach(apiVersions, (apiVersion) => {
 								data.apiVersion = apiVersion;
 
-								disposer = utils.setStatusBarMessage('Fetching schema of the API version provided');
 								utils.fetchAPISchema({
 									apiKey: data.xApiKey,
 									apiId: data.api.id,
 									apiVersionId: data.apiVersion.id
 								}, (err, schema) => {
 									data.schema = schema;
-									disposer.dispose();
 
 									if (err) {
 										utils.showError('Something went wrong while fetching API schema, please try again');
 										return;
 									}
 									else {
-										utils.showError(vscode.workspace.workspaceFolders[0].uri.toString());
+										if (apiVersion.id === apiVersions[apiVersions.length - 1].id) {
+											disposer.dispose();
+										}
 
-										let folderPath = vscode.workspace.workspaceFolders[0].uri.toString().split(':')[1];
-										let filePath = path.join(folderPath, `${data.api.name}-${data.apiVersion.name}.${data.schema.language}`);
+										let filePath = path.join(folderPath, `${apiVersion.name}.${schema.language}`);
+										context.workspaceState.update(apiVersion.id, JSON.stringify({
+											'filePath': filePath,
+											'apiName': api.name,
+											'apiId': api.id,
+											'schemaId': schema.id,
+											'versionName': apiVersion.name,
+											'schemaType': schema.type,
+											'schemaLanguage': schema.language
+										}));
 
-										fs.writeFile(filePath, schema.schema, {}, (err) => {
+										treeProvider.refresh();
+
+
+										fs.writeFile(path.join(wsRoot, filePath), schema.schema, {}, (err) => {
 											if (err) {
 												utils.showError('Some error occurred while writing schema to the file ' + err);
-											}
-											else {
-												let openPath = vscode.Uri.file(filePath);
-												vscode.workspace.openTextDocument(openPath).then(doc => {
-													vscode.window.showTextDocument(doc);
-													utils.showInfo('API Schema fetched successfully!')
-												});
 											}
 										});
 									}
@@ -222,6 +245,106 @@ async function activate(context) {
 		else {
 			utils.showError('Please have your schema in active tab and execute the command !');
 		}
+	});
+
+	vscode.commands.registerCommand('postman-schema-editor.openSchemaVersion', versionId => {
+		// TODO all storage to be agnostic of WS root
+		let filePath = JSON.parse(context.workspaceState.get(versionId))['filePath'];
+		openUri = vscode.Uri.file(path.join(wsRoot, filePath));
+
+		vscode.workspace.openTextDocument(openUri).then(doc => {
+			vscode.window.showTextDocument(doc, {
+				preserveFocus: true,
+				preview: true
+			});
+		});
+	});
+
+
+	vscode.commands.registerCommand('postmanApis.syncVersionToPostman', (element) => {
+		let params = JSON.parse(context.workspaceState.get(element.id));
+		vscode.window.showWarningMessage(`Publish changes to API \`${params.apiName}\` (version: ${params.versionName}) to Postman?`, "Yes", "Cancel").then((choice) => {
+
+			if (choice === "Yes") {
+				// TODO all storage to be agnostic of WS root
+				fs.readFile(path.join(wsRoot, params.filePath), "utf8", (err, content) => {
+					if (err) {
+						utils.showError(JSON.stringify(err));
+					}
+
+					let disposer = utils.setStatusBarMessage('Uploading the schema to postman');
+
+
+					let payload = {
+						apiKey: data.xApiKey,
+						apiId: params.apiId,
+						apiVersionId: element.id,
+						schemaId: params.schemaId,
+						schemaType: params.schemaType,
+						schemaLanguage: params.schemaLanguage,
+						schema: content
+					};
+
+					utils.updateAPISchema(payload, (error, response) => {
+						disposer.dispose();
+
+						if (error || response.statusCode !== 200) {
+							utils.showError('Some error occurred while publishing the schema: ' + error);
+							return;
+						}
+						else {
+							utils.showInfo('Successfully published updated schema to Postman!');
+						}
+					});
+				});
+			}
+		}
+
+		);
+	});
+
+	vscode.commands.registerCommand('postmanApis.syncVersionFromPostman', (element) => {
+		let params = JSON.parse(context.workspaceState.get(element.id));
+
+		vscode.window.showWarningMessage(`Pull changes to API \`${params.apiName}\` (version: ${params.versionName}) from Postman? Your local changes will be lost.`, "Yes", "Cancel").then((choice) => {
+			if (choice === 'Yes') {
+				utils.fetchAPISchema({
+					apiKey: data.xApiKey,
+					apiId: params.apiId,
+					apiVersionId: element.id
+				}, (err, schema) => {
+
+					if (err) {
+						utils.showError('Something went wrong while fetching API schema, please try again');
+						return;
+					}
+
+
+					else {
+						context.workspaceState.update(element.id, JSON.stringify({
+							'filePath': params.filePath,
+							'apiName': params.apiName,
+							'apiId': params.apiId,
+							'schemaId': schema.id,
+							'versionName': params.versionName,
+							'schemaType': schema.type,
+							'schemaLanguage': schema.language
+						}));
+						// TODO all storage to be agnostic of WS root
+						fs.writeFile(path.join(wsRoot, params.filePath), schema.schema, {}, (err) => {
+							if (err) {
+								utils.showError('Some error occurred while writing schema to the file ' + err);
+							}
+							utils.showInfo('Successfully fetched schema from Postman!');
+						});
+					}
+				});
+			}
+		});
+	});
+
+	vscode.commands.registerCommand('postmanApis.refreshEntry', () => {
+		treeProvider.refresh();
 	});
 
 	context.subscriptions.push(fetchCommandDisposer, publishCommandDisposer);

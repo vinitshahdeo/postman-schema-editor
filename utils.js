@@ -1,3 +1,5 @@
+const { utils } = require('mocha');
+
 const request = require('request'),
   vscode = require('vscode'),
   async = require('async'),
@@ -134,7 +136,7 @@ module.exports = {
           if (err || res.error) {
             return cb(err || res.error.message);
           }
-          
+
           return next(null, _.get(JSON.parse(res.body), 'version.schema')[0]);
         });
       },
@@ -174,22 +176,23 @@ module.exports = {
    * @param {function} cb  - the callback function, called with (error, response)
    */
   updateAPISchema: function (payload, cb) {
+
     // The code you place here will be executed every time your command is executed
-		let options = {
-			method: 'PUT',
-			url: `${POSTMAN_API_URL}/apis/${payload.apiId}/versions/${payload.apiVersionId}/schemas/${payload.schemaId}`,
-			headers: {
-				'x-api-key': payload.apiKey,
-				'Content-Type': 'application/json'
+    let options = {
+      method: 'PUT',
+      url: `${POSTMAN_API_URL}/apis/${payload.apiId}/versions/${payload.apiVersionId}/schemas/${payload.schemaId}`,
+      headers: {
+        'x-api-key': payload.apiKey,
+        'Content-Type': 'application/json'
       },
       // TODO need to detect the type and language we want to update as
       body: JSON.stringify({
-				schema: {
-					type: payload.schemaType,
-					language: payload.schemaLanguage,
-					schema: payload.schema
-				}
-			})
+        schema: {
+          type: payload.schemaType,
+          language: payload.schemaLanguage,
+          schema: payload.schema
+        }
+      })
     };
     request(options, function (error, response) {
       if (error || response.error) {
@@ -217,7 +220,7 @@ module.exports = {
       (next) => {
         if (!fs.existsSync(`${folderPath}/${api.name}`)) {
           fs.mkdir(`${folderPath}/${api.name}`, (err) => {
-            if (err) 
+            if (err)
               return next(err);
             return next(null);
           });
@@ -238,7 +241,7 @@ module.exports = {
 
         request(options, (err, res) => {
           if (err) return next(err);
-          
+
           return next(null, JSON.parse(res.body).versions);
         });
       },
@@ -258,14 +261,14 @@ module.exports = {
                 return next(err);
             });
           })
-        
+
         }, (err) => {
           if (err)
             return next(err);
         });
       }
     ], (err, result) => {
-      if (err) 
+      if (err)
         return cb(err);
 
       return cb(null, result);
@@ -315,7 +318,7 @@ module.exports = {
     vscode.window.showInformationMessage(info);
   },
 
-  setStatusBarMessage: function(text) {
+  setStatusBarMessage: function (text) {
     return vscode.window.setStatusBarMessage(text);
   }
 };

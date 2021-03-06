@@ -1,8 +1,9 @@
 {
-	"name": "postman-schema-editor",
+	"name": "postman-schema-editor-beta",
 	"displayName": "Postman Schema Editor",
 	"description": "Edit your Postman Schema directly into VS Code",
-	"version": "1.0.0",
+	"version": "1.0.2",
+	"publisher": "wow",
 	"engines": {
 		"vscode": "^1.51.0"
 	},
@@ -25,15 +26,62 @@
 				"title": "Fetch Schema from Postman"
 			},
 			{
+				"command": "postman-schema-editor.openSchemaVersion",
+				"title": "Open a specific version of the schema"
+			},
+			{
 				"command": "postman-schema-editor.publishSchemaToPostman",
 				"title": "Publish Schema to Postman"
+			},
+			{
+				"command": "postmanApis.syncVersionToPostman",
+				"title": "Sync Schema to Postman",
+				"icon": {
+					"light": "media/upload-stroke.svg",
+					"dark": "media/upload-stroke.svg"
+				}
+			},
+			{
+				"command": "postmanApis.syncVersionFromPostman",
+				"title": "Sync Schema from Postman",
+				"icon": {
+					"light": "media/syncing-stroke.svg",
+					"dark": "media/syncing-stroke.svg"
+				}
+			},
+			{
+				"command": "postmanApis.refreshEntry",
+				"title": "Refresh tree view",
+				"icon": {
+					"light": "resources/light/refresh.svg",
+					"dark": "resources/dark/refresh.svg"
+				}
 			}
 		],
 		"menus": {
+			"view/title": [
+				{
+					"command": "postmanApis.refreshEntry",
+					"when": "view == postmanApis",
+					"group": "navigation"
+				}
+			],
 			"editor/context": [
 				{
 					"command": "postman-schema-editor.publishSchemaToPostman",
 					"group": "Postman"
+				}
+			],
+			"view/item/context": [
+				{
+					"command": "postmanApis.syncVersionToPostman",
+					"when": "view == postmanApis && viewItem == apiVersion",
+					"group": "inline"
+				},
+				{
+					"command": "postmanApis.syncVersionFromPostman",
+					"when": "view == postmanApis && viewItem == apiVersion",
+					"group": "inline"
 				}
 			]
 		},
@@ -41,7 +89,7 @@
 			"activitybar": [
 				{
 					"id": "package-explorer",
-					"title": "Postman APIs",
+					"title": "Postman",
 					"icon": "media/pm.svg"
 				}
 			]
@@ -49,8 +97,14 @@
 		"views": {
 			"package-explorer": [
 				{
+					"id": "fetchApi",
+					"name": "FETCH API",
+					"icon": "media/dep.svg",
+					"contextualTitle": "Package Explorer"
+				},
+				{
 					"id": "postmanApis",
-					"name": "Postman APIs",
+					"name": "APIS",
 					"icon": "media/dep.svg",
 					"contextualTitle": "Package Explorer"
 				}
@@ -85,6 +139,15 @@
 	"dependencies": {
 		"async": "^3.2.0",
 		"lodash": "^4.17.20",
-		"request": "2.88.2"
+		"request": "2.88.2",
+		"@types/vscode": "^1.51.0",
+		"@types/glob": "^7.1.3",
+		"@types/mocha": "^8.0.0",
+		"@types/node": "^12.11.7",
+		"eslint": "^7.9.0",
+		"glob": "^7.1.6",
+		"mocha": "^8.1.3",
+		"typescript": "^4.0.2",
+		"vscode-test": "^1.4.0"
 	}
 }
