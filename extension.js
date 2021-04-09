@@ -347,6 +347,106 @@ async function activate(context) {
 		treeProvider.refresh();
 	});
 
+	vscode.commands.registerCommand('postmanApis.syncApiToPostman', (element) => {
+		let apiVersions = JSON.parse(context.workspaceState.get(element.id));
+		vscode.window.showWarningMessage(`Publish all the versions of the API \`${element.name}\`  to Postman?`, "Yes", "Cancel").then((choice) => {
+
+			if (choice === "Yes") {
+				let disposer = utils.setStatusBarMessage('Uploading the API to Postman');
+				// addind this counter to maintain the count of api versions that has been processed
+				let apiVersionsProcessed=0;
+
+				_.forEach(apiVersions,(apiVersion)=>{
+					const params = JSON.parse(context.workspaceState.get(apiVersion.id));
+					fs.readFile(path.join(wsRoot, params.filePath), "utf8", (err, content) => {
+						if (err) {
+							utils.showError(JSON.stringify(err));
+						}
+						let payload = {
+							apiKey: data.xApiKey,
+							apiId: params.apiId,
+							apiVersionId: apiVersion.id,
+							schemaId: params.schemaId,
+							schemaType: params.schemaType,
+							schemaLanguage: params.schemaLanguage,
+							schema: content
+						};
+						utils.updateAPISchema(payload, (error, response) => {
+							
+							if (error || response.statusCode !== 200) {
+								disposer.dispose();
+								utils.showError('Some error occurred while publishing the API: ' + error);
+								return;
+							}
+							else {
+								apiVersionsProcessed++;
+
+								// checking if all the api versions are processed then show the success message.
+								if(apiVersionsProcessed===apiVersions.length) {
+									disposer.dispose();
+									utils.showInfo('Successfully published API to Postman!');
+								}
+							}
+						});
+					});
+				})	
+			}
+		});
+	});
+
+	vscode.commands.registerCommand('postmanApis.syncApiFromPostman', (element) => {
+		let apiVersions = JSON.parse(context.workspaceState.get(element.id));
+		vscode.window.showWarningMessage(`Pull changes to all versions of API \`${element.name}\` from Postman? Your local changes will be lost.`, "Yes", "Cancel").then((choice) => {
+			if (choice === 'Yes') {
+				let disposer = utils.setStatusBarMessage('Fetching API from Postman');
+				// addind this counter to maintain the count of api versions that has been processed
+				let apiVersionsProcessed=0;
+
+				_.forEach(apiVersions,(apiVersion)=>{
+					const params = JSON.parse(context.workspaceState.get(apiVersion.id));
+					utils.fetchAPISchema({
+						apiKey: data.xApiKey,
+						apiId: params.apiId,
+						apiVersionId: apiVersion.id
+					}, (err, schema) => {
+	
+						if (err) {
+							disposer.dispose();
+							utils.showError('Something went wrong while fetching API schemas, please try again');
+							return;
+						}
+						else {
+							context.workspaceState.update(apiVersion.id, JSON.stringify({
+								'filePath': params.filePath,
+								'apiName': params.apiName,
+								'apiId': params.apiId,
+								'schemaId': schema.id,
+								'versionName': params.versionName,
+								'schemaType': schema.type,
+								'schemaLanguage': schema.language
+							}));
+							// TODO all storage to be agnostic of WS root
+							fs.writeFile(path.join(wsRoot, params.filePath), schema.schema, {}, (err) => {
+								if (err) {
+									disposer.dispose();
+									utils.showError('Some error occurred while writing schemas to the files ' + err);
+									return;
+								}
+								apiVersionsProcessed++;
+
+								// checking if all the versions are processed then show success message
+								if(apiVersionsProcessed===apiVersions.length) {
+									disposer.dispose();
+									utils.showInfo('Successfully fetched API from Postman!');
+								}
+							});
+						}
+					});
+				})
+			}
+		});
+	});
+
 	context.subscriptions.push(fetchCommandDisposer, publishCommandDisposer);
 }
 exports.activate = activate;

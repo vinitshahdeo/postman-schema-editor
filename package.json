@@ -56,6 +56,22 @@
 					"light": "resources/light/refresh.svg",
 					"dark": "resources/dark/refresh.svg"
 				}
+			},
+			{
+				"command": "postmanApis.syncApiToPostman",
+				"title": "Sync API to Postman",
+				"icon": {
+					"light": "media/upload-stroke.svg",
+					"dark": "media/upload-stroke.svg"
+				}
+			},
+			{
+				"command": "postmanApis.syncApiFromPostman",
+				"title": "Sync API from Postman",
+				"icon": {
+					"light": "media/syncing-stroke.svg",
+					"dark": "media/syncing-stroke.svg"
+				}
 			}
 		],
 		"menus": {
@@ -82,7 +98,18 @@
 					"command": "postmanApis.syncVersionFromPostman",
 					"when": "view == postmanApis && viewItem == apiVersion",
 					"group": "inline"
+				},
+				{
+					"command": "postmanApis.syncApiToPostman",
+					"when": "view == postmanApis && viewItem == api",
+					"group": "inline"
+				},
+				{
+					"command": "postmanApis.syncApiFromPostman",
+					"when": "view == postmanApis && viewItem == api",
+					"group": "inline"
 				}
+
 			]
 		},
 		"viewsContainers": {
