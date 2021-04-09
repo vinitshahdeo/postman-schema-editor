@@ -352,8 +352,9 @@ async function activate(context) {
 		vscode.window.showWarningMessage(`Publish all the versions of the API \`${element.name}\`  to Postman?`, "Yes", "Cancel").then((choice) => {
 
 			if (choice === "Yes") {
+				
 				let disposer = utils.setStatusBarMessage('Uploading the API to Postman');
-				// addind this counter to maintain the count of api versions that has been processed
+				// adding this counter to maintain the count of api versions that has been processed
 				let apiVersionsProcessed=0;
 
 				_.forEach(apiVersions,(apiVersion)=>{
@@ -399,7 +400,7 @@ async function activate(context) {
 		vscode.window.showWarningMessage(`Pull changes to all versions of API \`${element.name}\` from Postman? Your local changes will be lost.`, "Yes", "Cancel").then((choice) => {
 			if (choice === 'Yes') {
 				let disposer = utils.setStatusBarMessage('Fetching API from Postman');
-				// addind this counter to maintain the count of api versions that has been processed
+				// adding this counter to maintain the count of api versions that has been processed
 				let apiVersionsProcessed=0;
 
 				_.forEach(apiVersions,(apiVersion)=>{
