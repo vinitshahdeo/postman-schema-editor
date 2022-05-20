@@ -1,4 +1,4 @@
-# postman-schema-editor
+# Postman Schema Editor : a VSCode Extension to edit Postman Schemas 
 
 A VSCode extension that allows you to edit your Postman Schemas in editor and publish your schema changes to Postman from VSCode editor itself.
 
